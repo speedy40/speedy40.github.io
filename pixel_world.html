@@ -1,9 +1,7 @@
 <!DOCTYPE html>
 <html> 
   <head>
-	  <link rel="icon" href="https://www.khanacademy.org/computer-programming/pixel-world-platformer/5119936621363200/4999122110038016.png" type="image/png">
-
-    <title>Pixel world</title> 
+    <title>The Blue Realm</title> 
     <style>
         body {
             overflow:hidden;
@@ -33,7 +31,7 @@
    var mouseIsPressed = false;
    
 
-   
+   smooth();
    
 var pixel = function(message, x, y, size, colors, textWidth, textHeight) {
     
@@ -768,25 +766,111 @@ var leveldisplay_png = [[color(50,50,50), color(150,150,150), color(255,255,255)
 'iiiiiiiiii',
 'jjjjjjjjjj',
 ];
-leveldisplay_png = toImg(leveldisplay_png);
-healthbar2_png = toImg(healthbar2_png);
-healthbar_png = toImg(healthbar_png);
-santahat_png = toImg(santahat_png);
-santahat2_png = toImg(santahat2_png);
-thumnail=toImg(thumnail,20);
-mobilepcpng = toImg(mobilepcpng);
-upbtnpng = toImg(upbtnpng );
- rightbtnpng = toImg(rightbtnpng);
-leftbtnpng = toImg(leftbtnpng);
-portalpng = toImg(portalpng);
-healblockpng = toImg(healblockpng);
-dirtpng = toImg(dirtpng);
-playereyespng = toImg(playereyespng);
-spikepng = toImg(spikepng);
-lavapng = toImg(lavapng);
-blockpng = toImg(blockpng);
-backgr = toImg(backgr,20);
-playerpng = toImg(playerpng);
+
+
+
+
+var images={},toload={
+    
+    img1: {
+    
+      d:function() {  
+          backgr = toImg(backgr,20);
+    }
+    },
+    
+    img2: {
+        d:function() {
+            playerpng = toImg(playerpng);
+        }
+        
+    },
+    img3:{
+        d:function() {
+            blockpng = toImg(blockpng);
+        }
+    },
+    img4:{
+        d:function() {
+            lavapng = toImg(lavapng);
+        }
+    },
+    img5:{
+        d:function(){
+            spikepng = toImg(spikepng);
+        }
+    },
+    img6:{
+        d:function() {
+            thumnail=toImg(thumnail,20);
+        }
+    },
+    img7:{
+        d:function() {
+            playereyespng = toImg(playereyespng);
+        }
+    },
+    img8:{
+        d:function() {
+            dirtpng = toImg(dirtpng);
+        }
+    },
+    img9:{
+        d:function() {
+            healblockpng = toImg(healblockpng);
+        }
+    },
+    img10:{
+        d:function() {
+        portalpng = toImg(portalpng);
+    }
+    },
+    img11:{
+        d:function() {
+            leftbtnpng = toImg(leftbtnpng);
+        }
+    },
+    img12:{
+        d:function() {
+             rightbtnpng = toImg(rightbtnpng);
+        }
+    },
+    img13:{
+        d:function(){
+            upbtnpng = toImg(upbtnpng );
+        }
+    },
+    img14:{
+        d:function(){
+            mobilepcpng = toImg(mobilepcpng);
+        }
+    },
+    img15:{
+        d:function(){
+            santahat2_png = toImg(santahat2_png);
+        }
+    },
+    img16:{
+        d:function(){
+            santahat_png = toImg(santahat_png);
+        }
+    },
+    img17:{
+        d:function(){
+            healthbar_png = toImg(healthbar_png);
+        }
+    },
+    img18:{
+        d:function() {
+            healthbar2_png = toImg(healthbar2_png);
+        }
+    },
+    img19:{
+        d:function() {
+            leveldisplay_png = toImg(leveldisplay_png);
+        }
+    },
+};
 
 background(255,255,255);
 var Button = function(config) {
@@ -1956,7 +2040,7 @@ text("mobile/\npc",btn1.x+5,btn1.y+7);
           
           image(thumnail,0,0,600,400);
           
-          pixel("PIXEL WORLD",0,0,50,color(255,255,255));
+          pixel("The Blue Realm",0,0,47,color(255,255,255));
           pixel("CHRISTMAS UPDATE",0,350,34,color(255,255,0));
           
       }
@@ -1973,6 +2057,59 @@ mouseClicked = function() {
 };
 
       
+(function(spriteObj, targetObj, callback) {
+    // Version: 1.0.0
+    var SpriteLoader = {}; // Define empty object.
+    SpriteLoader.oldDraw = draw; // Save the old draw function.
+    SpriteLoader.oldFC = frameCount; // Save the old frameCount.
+    
+    SpriteLoader.index = 0; // Loading index.
+    SpriteLoader.keys = Object.keys(spriteObj); // The keys of the sprite object.
+    SpriteLoader.values = Object.values(spriteObj); // The values of the sprite object.
+    
+    frameRate(0); // Set the frameRate to the fastest it will go.
+    draw = function() { // Draw loop.
+        background(0,0); // Set the background to transparency.
+        if(SpriteLoader.values[SpriteLoader.index]) {
+            if(SpriteLoader.values[SpriteLoader.index].b) { // If it's pixel art...
+                for(var y = 0; y < SpriteLoader.values[SpriteLoader.index].b.length; y++) {
+                    var p = SpriteLoader.values[SpriteLoader.index].p;
+                    var s = SpriteLoader.values[SpriteLoader.index].b[y].split("");
+                    for(var x = 0; x < s.length; x++) {
+                        fill(p[s[x]]||color(0,0));
+                        noStroke();
+                        rectMode(CORNER);
+                        rect(x*SpriteLoader.values[SpriteLoader.index].w,y*SpriteLoader.values[SpriteLoader.index].h,SpriteLoader.values[SpriteLoader.index].w,SpriteLoader.values[SpriteLoader.index].h);
+                    }
+                }
+                targetObj[SpriteLoader.keys[SpriteLoader.index]] = get(0,0,SpriteLoader.values[SpriteLoader.index].b[0].split("").length*SpriteLoader.values[SpriteLoader.index].w||1,SpriteLoader.values[SpriteLoader.index].b.length*SpriteLoader.values[SpriteLoader.index].h||1); // Save the image to the target object.
+            } else { // Otherwise...
+                (SpriteLoader.values[SpriteLoader.index].d||function(){})(); // Draw the next sprite.
+                targetObj[SpriteLoader.keys[SpriteLoader.index]] = get(0,0,SpriteLoader.values[SpriteLoader.index].w||1,SpriteLoader.values[SpriteLoader.index].h||1); // Save the image to the target object.
+            }
+        }
+        SpriteLoader.index++; // Increment the index.
+        
+        background(0); // Black background.
+        textSize(20); // Text stuff.
+        fill(255);
+        textAlign(CENTER,CENTER);
+        text("Loading... "+((SpriteLoader.index/SpriteLoader.keys.length)*100).toFixed(0)+"%",width/2,height/2); // Draw the loading percentage.
+        
+        if(SpriteLoader.index >= SpriteLoader.values.length) { // If it should be done...
+            draw = SpriteLoader.oldDraw; // Reset the draw function to what it was before.
+            frameCount = SpriteLoader.oldFC; // And the frameCount.
+            (callback||function() {})(); // Run the callback if it exists.
+            SpriteLoader = undefined; // Remove the SpriteLoader object.
+        }
+    };
+}(toload, images, function() {
+    frameRate(60);
+    textAlign(LEFT, TOP);
+    noFill();
+    textSize(12);
+})); //Sprite loading library (V1) by Peter
+
       
       
     }};
