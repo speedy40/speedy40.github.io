@@ -1447,7 +1447,7 @@ https://www.khanacademy.org/computer-programming/ka-project-exporter/51954867913
 			Player.prototype.move = function() {
 			    
 			    //when th up key is pressed
-			    if(key_pressed[UP] && this.canJump){
+			    if((key_pressed[UP]||up) && this.canJump){
         //the Y speed equals nagitve the overall speed x 3
         this.speedy = -this.overallSpeed*3;
         //and canJump equals false
