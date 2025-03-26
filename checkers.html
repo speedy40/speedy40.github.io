@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- Program exported to HTML using the KA Project Exporter by @MushyAvocado 
+https://www.khanacademy.org/computer-programming/ka-project-exporter/5195486791385088
+-->
+	
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+	<title>checkers</title>
+	<style>
+		
+		
+		/* Change the color as you want */
+		:root {
+			--background-color: #000000;
+		}
+		
+		
+		html, body, #wrapper {
+			overflow: hidden;
+			width: 100%;
+		    height: 100%;
+			margin: 0px;
+			padding: 0px;
+		    width: calc(100% + 1px);
+		}
+		
+		body {
+		    background-color: var(--background-color);
+		}
+		
+		
+		canvas {
+			width: fit-content;
+			height: fit-content;
+		}
+		
+		canvas:focus {
+			outline: none;
+		}
+		
+		/* Automatically fits to the remaining height and centers the canvas it contains */
+		#wrapper {
+			padding: 0px;
+			margin: 0px;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			width: 100%;
+		}
+		
+</style>
+</head>
+<body id="wrapper">
+    <!-- Canvases with a class of "sketch" are applied to the program in the order runPJS() is called. -->
+    <canvas class="sketch"></canvas>
+	<!-- Load the PJS library -->
+	<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/Khan/processing-js@master/processing.js"></script>
+	<!-- The exporter script must be loaded before the program script -->
+	<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/Mushy-Avocado/KA-exporter@v1.0.1/exporter.js"></script>
+	<!-- Run Khan Academy program and import PJS -->
+	<script type="application/javascript">
+		
+		
+		function program() {
+		    
+		    title("checkers");
+		    size(400, 400);
+		    
+		    // All code goes here
+			var turn = 0;
+			
+			var Board = function() {
+			    this.board = [
+			        [0, 2, 0, 2, 0, 2, 0, 2],
+			        [2, 0, 2, 0, 2, 0, 2, 0],
+			        [0, 2, 0, 2, 0, 2, 0, 2],
+			        [0, 0, 0, 0, 0, 0, 0, 0],
+			        [0, 0, 0, 0, 0, 0, 0, 0],
+			        [1, 0, 1, 0, 1, 0, 1, 0],
+			        [0, 1, 0, 1, 0, 1, 0, 1],
+			        [1, 0, 1, 0, 1, 0, 1, 0]
+			    ];
+			    this.numRows = this.board.length;
+			    this.numCols = this.board[0].length;
+			};
+			
+			Board.prototype.draw = function() {
+			
+			    for (var row = 0; row < this.numRows; row++) {
+			        for (var col = 0; col < this.numCols; col++) {
+			            if (row % 2 === 0) {
+			                if (col % 2 === 0) {
+			                    fill(225, 225, 150);
+			                } else {
+			                    fill(125, 75, 0);
+			                }
+			            } else {
+			                if (col % 2 === 0) {
+			                    fill(125, 75, 0);
+			                } else {
+			                    fill(225, 225, 150);
+			                }
+			            }
+			
+			            var cellWid = width / this.numCols;
+			            var cellHei = height / this.numRows;
+			
+			            noStroke();
+			            rect(col * cellWid, row * cellHei, cellWid, cellHei);
+			        }
+			    }
+			};
+			
+			var gameboard = new Board();
+			
+			var checkersP1 = [];
+			var checkersP2 = [];
+			
+			var CheckerPieceP1 = function(col, row) {
+			    this.col = col;
+			    this.row = row;
+			    this.dia = 40;
+			    this.rad = this.dia / 2;
+			    this.selected = false;
+			    this.king = false;
+			};
+			
+			CheckerPieceP1.prototype.draw = function() {
+			
+			    var cellWid = width / gameboard.numCols;
+			    var cellHei = height / gameboard.numRows;
+			
+			    strokeWeight(5);
+			
+			    if (this.selected) {
+			        stroke(0, 255, 0);
+			    } else {
+			        stroke(175, 0, 0);
+			    }
+			
+			    fill(200, 0, 0);
+			    ellipse(this.col * cellWid + (cellWid / 2), this.row * cellHei + (cellHei / 2), this.dia, this.dia);
+			    
+			    if (this.king) {
+			        noStroke();
+			        textSize(25);
+			        fill(150, 0, 0);
+			        textAlign(CENTER, CENTER);
+			        text("♛", this.col * cellWid + (cellWid / 2), this.row * cellHei + (cellHei / 2));
+			    }
+			};
+			
+			CheckerPieceP1.prototype.select = function() {
+			
+			    var cellWid = width / gameboard.numCols;
+			    var cellHei = height / gameboard.numRows;
+			
+			    if (mouseX > this.col * cellWid && mouseX < this.col * cellWid + cellWid && mouseY > this.row * cellHei && mouseY < this.row * cellHei + cellHei) {
+			        cursor(HAND);
+			
+			        if (mouseIsPressed) {
+			            
+			            for (var i = 0; i < checkersP1.length; i++) {
+			                checkersP1[i].selected = false;
+			            }
+			            
+			            this.selected = true;
+			        }
+			    }
+			};
+			
+			CheckerPieceP1.prototype.move = function(r, c) {
+			    
+			    var cellWid = width / gameboard.numCols;
+			    var cellHei = height / gameboard.numRows;
+			
+			    if (this.selected) {
+			    
+			        if (mouseX > (this.col + c) * cellWid && mouseX < (this.col + c) * cellWid + cellWid && mouseY > (this.row + r) * cellHei && mouseY < (this.row + r) * cellHei + cellHei && gameboard.board[this.row + r][this.col + c] === 0) {
+			            
+			            cursor(HAND);
+			
+			            noStroke();
+			            fill(255, 255, 255, 100);
+			            rect((this.col + c) * cellWid, (this.row + r) * cellHei, cellWid, cellHei);
+			
+			            if (mouseIsPressed) {
+			                gameboard.board[this.row][this.col] = 0;
+			                gameboard.board[this.row + r][this.col + c] = 1;
+			                
+			                this.row += r;
+			                this.col += c;
+			                
+			                turn++;
+			                this.selected = false;
+			            }
+			        }
+			    }
+			};
+			
+			CheckerPieceP1.prototype.jump = function(r1, c1) {
+			    
+			    var r2 = r1 * 2;
+			    var c2 = c1 * 2;
+			
+			    var cellWid = width / gameboard.numCols;
+			    var cellHei = height / gameboard.numRows;
+			
+			    if (this.selected) {
+			        
+			        if (mouseX > (this.col + c2) * cellWid && mouseX < (this.col + c2) * cellWid + cellWid && mouseY > (this.row + r2) * cellHei && mouseY < (this.row + r2) * cellHei + cellHei && (gameboard.board[this.row + r1][this.col + c1] === 2 && gameboard.board[this.row + r2][this.col + c2] === 0)) {
+			            
+			            cursor(HAND);
+			
+			            noStroke();
+			            fill(255, 255, 255, 100);
+			            rect((this.col + c2) * cellWid, (this.row + r2) * cellHei, cellWid, cellHei);
+			
+			            if (mouseIsPressed) {
+			                gameboard.board[this.row][this.col] = 0;
+			                gameboard.board[this.row + r1][this.col + c1] = 0;
+			                gameboard.board[this.row + r2][this.col + c2] = 1;
+			                
+			                for (var i = 0; i < checkersP2.length; i++) {
+			                    if (checkersP2[i].row === (this.row + r1) && checkersP2[i].col === (this.col + c1)) {
+			                        checkersP2.splice(i, 1);
+			                    }
+			                }
+			                
+			                this.row += r2;
+			                this.col += c2;
+			
+			                turn++;
+			                this.selected = false;
+			            }
+			        }
+			    }
+			};
+			
+			CheckerPieceP1.prototype.gameplay = function() {
+			    
+			    this.select();
+			    
+			    this.move(-1, -1);
+			    this.move(-1, 1);
+			    this.jump(-1, -1);
+			    this.jump(-1, 1);
+			
+			    if (this.row === 0) {
+			        this.king = true;
+			    }
+			    
+			    if (this.king === true) {
+			        this.move(1, -1);
+			        this.move(1, 1);
+			        this.jump(1, -1);
+			        this.jump(1, 1);
+			    }
+			};
+			
+			var CheckerPieceP2 = function(col, row) {
+			    this.col = col;
+			    this.row = row;
+			    this.dia = 40;
+			    this.rad = this.dia / 2;
+			    this.selected = false;
+			    this.king = false;
+			};
+			
+			CheckerPieceP2.prototype.draw = function() {
+			
+			    var cellWid = width / gameboard.numCols;
+			    var cellHei = height / gameboard.numRows;
+			
+			    strokeWeight(5);
+			
+			    if (this.selected) {
+			        stroke(0, 255, 0);
+			    } else {
+			        stroke(30);
+			    }
+			
+			    fill(40);
+			    ellipse(this.col * cellWid + (cellWid / 2), this.row * cellHei + (cellHei / 2), this.dia, this.dia);
+			    
+			    if (this.king) {
+			        noStroke();
+			        textSize(25);
+			        fill(0);
+			        textAlign(CENTER, CENTER);
+			        text("♛", this.col * cellWid + (cellWid / 2), this.row * cellHei + (cellHei / 2));
+			    }
+			};
+			
+			CheckerPieceP2.prototype.select = function() {
+			
+			    var cellWid = width / gameboard.numCols;
+			    var cellHei = height / gameboard.numRows;
+			
+			    if (mouseX > this.col * cellWid && mouseX < this.col * cellWid + cellWid && mouseY > this.row * cellHei && mouseY < this.row * cellHei + cellHei) {
+			        cursor(HAND);
+			
+			        if (mouseIsPressed) {
+			            
+			            for (var i = 0; i < checkersP2.length; i++) {
+			                checkersP2[i].selected = false;
+			            }
+			            
+			            this.selected = true;
+			        }
+			    }
+			};
+			
+			CheckerPieceP2.prototype.move = function(r, c) {
+			    
+			    var cellWid = width / gameboard.numCols;
+			    var cellHei = height / gameboard.numRows;
+			
+			    if (this.selected) {
+			    
+			        if (mouseX > (this.col + c) * cellWid && mouseX < (this.col + c) * cellWid + cellWid && mouseY > (this.row + r) * cellHei && mouseY < (this.row + r) * cellHei + cellHei && gameboard.board[this.row + r][this.col + c] === 0) {
+			            
+			            cursor(HAND);
+			
+			            noStroke();
+			            fill(255, 255, 255, 100);
+			            rect((this.col + c) * cellWid, (this.row + r) * cellHei, cellWid, cellHei);
+			
+			            if (mouseIsPressed) {
+			                gameboard.board[this.row][this.col] = 0;
+			                gameboard.board[this.row + r][this.col + c] = 2;
+			                
+			                this.row += r;
+			                this.col += c;
+			                
+			                turn++;
+			                this.selected = false;
+			            }
+			        }
+			    }
+			};
+			
+			CheckerPieceP2.prototype.jump = function(r1, c1) {
+			    
+			    var r2 = r1 * 2;
+			    var c2 = c1 * 2;
+			
+			    var cellWid = width / gameboard.numCols;
+			    var cellHei = height / gameboard.numRows;
+			        
+			    if (this.selected) {
+			        
+			        if (mouseX > (this.col + c2) * cellWid && mouseX < (this.col + c2) * cellWid + cellWid && mouseY > (this.row + r2) * cellHei && mouseY < (this.row + r2) * cellHei + cellHei && (gameboard.board[this.row + r1][this.col + c1] === 1 && gameboard.board[this.row + r2][this.col + c2] === 0)) {
+			
+			            cursor(HAND);
+			
+			            noStroke();
+			            fill(255, 255, 255, 100);
+			            rect((this.col + c2) * cellWid, (this.row + r2) * cellHei, cellWid, cellHei);
+			
+			            if (mouseIsPressed) {
+			
+			                gameboard.board[this.row][this.col] = 0;
+			                gameboard.board[this.row + r1][this.col + c1] = 0;
+			                gameboard.board[this.row + r2][this.col + c2] = 2;
+			                
+			                for (var i = 0; i < checkersP1.length; i++) {
+			                    if (checkersP1[i].row === (this.row + r1) && checkersP1[i].col === (this.col + c1)) {
+			                        checkersP1.splice(i, 1);
+			                    }
+			                }
+			                
+			                this.row += r2;
+			                this.col += c2;
+			
+			                turn++;
+			                this.selected = false;
+			            }
+			        }
+			    }
+			};
+			
+			CheckerPieceP2.prototype.gameplay = function() {
+			    
+			    this.select();
+			    
+			    this.move(1, -1);
+			    this.move(1, 1);
+			    this.jump(1, -1);
+			    this.jump(1, 1);
+			
+			    if (this.row === gameboard.numRows - 1) {
+			        this.king = true;
+			    }
+			    
+			    if (this.king === true) {
+			        this.move(-1, -1);
+			        this.move(-1, 1);
+			        this.jump(-1, -1);
+			        this.jump(-1, 1);
+			    }
+			};
+			
+			for (var row = 0; row < gameboard.numRows; row++) {
+			    for (var col = 0; col < gameboard.numCols; col++) {
+			        if (gameboard.board[row][col] === 1) {
+			            checkersP1.push(new CheckerPieceP1(col, row));
+			        } else if (gameboard.board[row][col] === 2) {
+			            checkersP2.push(new CheckerPieceP2(col, row));
+			        }
+			    }
+			}
+			
+			draw = function() {
+			    cursor(ARROW);
+			    background(255);
+			
+			    gameboard.draw();
+			
+			    for (var i = 0; i < checkersP1.length; i++) {
+			        checkersP1[i].draw();
+			        if (turn % 2 === 0) { 
+			            checkersP1[i].gameplay();
+			        }
+			    }
+			    
+			    for (var j = 0; j < checkersP2.length; j++) {
+			        checkersP2[j].draw();
+			        if (turn % 2 === 1) { 
+			            checkersP2[j].gameplay();
+			        }
+			    }
+			
+			    textAlign(CENTER, CENTER);
+			    textSize(50);
+			    fill(255);
+			    stroke(0);
+			
+			    if (checkersP1.length === 0) {
+			        noLoop();
+			        text("Player 2 Wins!", width / 2, height / 4);
+			    }
+			
+			    if (checkersP2.length === 0) {
+			        noLoop();
+			        text("Player 1 Wins!", width / 2, height / 4);
+			    } 
+			};
+			
+		}
+		
+		runPJS(program);
+		
+		// Add reload button on KA --> <script>
+		
+	</script>
+</body>
+
+</html>
